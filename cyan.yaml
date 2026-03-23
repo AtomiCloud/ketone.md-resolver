@@ -1,0 +1,18 @@
+username: atomi
+name: md
+description: AtomiCloud's markdown resolver
+project: https://github.com/AtomiCloud/ketone.md-resolver
+source: https://github.com/AtomiCloud/ketone.md-resolver
+email: ernest@atomi.cloud
+tags: ["atomi","markdown"]
+readme: README.MD
+build:
+  registry: ${DOMAIN:-docker.io}/${GITHUB_REPO_REF:-atomi}
+  platforms:
+    - linux/amd64
+    - linux/arm64
+  images:
+    resolver:
+      image: md
+      dockerfile: Dockerfile
+      context: .
