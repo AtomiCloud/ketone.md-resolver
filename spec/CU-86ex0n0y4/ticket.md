@@ -58,7 +58,7 @@ Convention
 
 # (H1) headers define section boundaries
 ## (H2) and deeper are content within a section (not boundaries)
-Content within a section is plain text/mardown (no nesting merge)
+Content within a section is plain text/markdown (no nesting merge)
 Sections are separated by one or more blank lines
 A section = { header: "# Overview", content: "This is the project overview." }
 
