@@ -1,12 +1,381 @@
 tests:
-  - name: single_file_resolve
+  # 1. Single file passthrough
+  - name: single_file
     expected:
       type: snapshot
       value:
-        path: ./snapshots/single_file_resolve
+        path: ./snapshots/single_file
     config: {}
     resolver_inputs:
-      - path: ./inputs/single_file_resolve/template-a
+      - path: ./inputs/single_file/template-a
         origin:
           template: template-a
           layer: 0
+
+  # 2. Two files, no shared sections
+  - name: merge_no_conflict
+    expected:
+      type: snapshot
+      value:
+        path: ./snapshots/merge_no_conflict
+    config: {}
+    resolver_inputs:
+      - path: ./inputs/merge_no_conflict/template-a
+        origin:
+          template: template-a
+          layer: 0
+      - path: ./inputs/merge_no_conflict/template-b
+        origin:
+          template: template-b
+          layer: 1
+
+  # 3. Two files, same section name — conflict resolved by default contentOrder (lowest-layer-first)
+  - name: merge_conflict
+    expected:
+      type: snapshot
+      value:
+        path: ./snapshots/merge_conflict
+    config: {}
+    resolver_inputs:
+      - path: ./inputs/merge_conflict/template-a
+        origin:
+          template: template-a
+          layer: 0
+      - path: ./inputs/merge_conflict/template-b
+        origin:
+          template: template-b
+          layer: 1
+
+  # 4. Three files, all same section — triple conflict
+  - name: triple_conflict
+    expected:
+      type: snapshot
+      value:
+        path: ./snapshots/triple_conflict
+    config: {}
+    resolver_inputs:
+      - path: ./inputs/triple_conflict/template-a
+        origin:
+          template: template-a
+          layer: 0
+      - path: ./inputs/triple_conflict/template-b
+        origin:
+          template: template-b
+          layer: 1
+      - path: ./inputs/triple_conflict/template-c
+        origin:
+          template: template-c
+          layer: 2
+
+  # 5. Mixed: some shared, some unique
+  - name: mixed_unique_shared
+    expected:
+      type: snapshot
+      value:
+        path: ./snapshots/mixed_unique_shared
+    config: {}
+    resolver_inputs:
+      - path: ./inputs/mixed_unique_shared/template-a
+        origin:
+          template: template-a
+          layer: 0
+      - path: ./inputs/mixed_unique_shared/template-b
+        origin:
+          template: template-b
+          layer: 1
+
+  # 6. H2+ preserved in content
+  - name: h2_preserved
+    expected:
+      type: snapshot
+      value:
+        path: ./snapshots/h2_preserved
+    config: {}
+    resolver_inputs:
+      - path: ./inputs/h2_preserved/template-a
+        origin:
+          template: template-a
+          layer: 0
+      - path: ./inputs/h2_preserved/template-b
+        origin:
+          template: template-b
+          layer: 1
+
+  # 7. Preamble (content before first H1)
+  - name: preamble
+    expected:
+      type: snapshot
+      value:
+        path: ./snapshots/preamble
+    config: {}
+    resolver_inputs:
+      - path: ./inputs/preamble/template-a
+        origin:
+          template: template-a
+          layer: 0
+      - path: ./inputs/preamble/template-b
+        origin:
+          template: template-b
+          layer: 1
+
+  # 8. Empty content section
+  - name: empty_section
+    expected:
+      type: snapshot
+      value:
+        path: ./snapshots/empty_section
+    config: {}
+    resolver_inputs:
+      - path: ./inputs/empty_section/template-a
+        origin:
+          template: template-a
+          layer: 0
+      - path: ./inputs/empty_section/template-b
+        origin:
+          template: template-b
+          layer: 1
+
+  # 9. Trailing whitespace normalization
+  - name: trailing_whitespace
+    expected:
+      type: snapshot
+      value:
+        path: ./snapshots/trailing_whitespace
+    config: {}
+    resolver_inputs:
+      - path: ./inputs/trailing_whitespace/template-a
+        origin:
+          template: template-a
+          layer: 0
+      - path: ./inputs/trailing_whitespace/template-b
+        origin:
+          template: template-b
+          layer: 1
+
+  # 10. Commutativity: swap input order → same output
+  - name: commutativity_order_1
+    expected:
+      type: snapshot
+      value:
+        path: ./snapshots/commutativity
+    config: {}
+    resolver_inputs:
+      - path: ./inputs/commutativity_a/template-a
+        origin:
+          template: template-a
+          layer: 0
+      - path: ./inputs/commutativity_a/template-b
+        origin:
+          template: template-b
+          layer: 1
+
+  - name: commutativity_order_2
+    expected:
+      type: snapshot
+      value:
+        path: ./snapshots/commutativity
+    config: {}
+    resolver_inputs:
+      - path: ./inputs/commutativity_b/template-b
+        origin:
+          template: template-b
+          layer: 1
+      - path: ./inputs/commutativity_b/template-a
+        origin:
+          template: template-a
+          layer: 0
+
+  # 11. sectionOrder strategies
+  - name: section_order_alphabetical
+    expected:
+      type: snapshot
+      value:
+        path: ./snapshots/section_order_alpha
+    config:
+      sectionOrder: alphabetical
+    resolver_inputs:
+      - path: ./inputs/section_order_alpha/template-a
+        origin:
+          template: template-a
+          layer: 0
+      - path: ./inputs/section_order_alpha/template-b
+        origin:
+          template: template-b
+          layer: 1
+
+  - name: section_order_reverse_alphabetical
+    expected:
+      type: snapshot
+      value:
+        path: ./snapshots/section_order_rev_alpha
+    config:
+      sectionOrder: reverse-alphabetical
+    resolver_inputs:
+      - path: ./inputs/section_order_rev_alpha/template-a
+        origin:
+          template: template-a
+          layer: 0
+      - path: ./inputs/section_order_rev_alpha/template-b
+        origin:
+          template: template-b
+          layer: 1
+
+  - name: section_order_lowest_layer_first
+    expected:
+      type: snapshot
+      value:
+        path: ./snapshots/section_order_lowest
+    config:
+      sectionOrder: lowest-layer-first
+    resolver_inputs:
+      - path: ./inputs/section_order_lowest/template-a
+        origin:
+          template: template-a
+          layer: 0
+      - path: ./inputs/section_order_lowest/template-b
+        origin:
+          template: template-b
+          layer: 1
+
+  - name: section_order_highest_layer_first
+    expected:
+      type: snapshot
+      value:
+        path: ./snapshots/section_order_highest
+    config:
+      sectionOrder: highest-layer-first
+    resolver_inputs:
+      - path: ./inputs/section_order_highest/template-a
+        origin:
+          template: template-a
+          layer: 0
+      - path: ./inputs/section_order_highest/template-b
+        origin:
+          template: template-b
+          layer: 1
+
+  # 12. contentOrder strategies
+  - name: content_order_alphabetical
+    expected:
+      type: snapshot
+      value:
+        path: ./snapshots/content_order_alpha
+    config:
+      contentOrder: alphabetical
+      sectionOrder: alphabetical
+    resolver_inputs:
+      - path: ./inputs/content_order_alpha/template-a
+        origin:
+          template: template-a
+          layer: 0
+      - path: ./inputs/content_order_alpha/template-b
+        origin:
+          template: template-b
+          layer: 1
+
+  - name: content_order_reverse_alphabetical
+    expected:
+      type: snapshot
+      value:
+        path: ./snapshots/content_order_rev_alpha
+    config:
+      contentOrder: reverse-alphabetical
+      sectionOrder: alphabetical
+    resolver_inputs:
+      - path: ./inputs/content_order_rev_alpha/template-a
+        origin:
+          template: template-a
+          layer: 0
+      - path: ./inputs/content_order_rev_alpha/template-b
+        origin:
+          template: template-b
+          layer: 1
+
+  - name: content_order_lowest_layer_first
+    expected:
+      type: snapshot
+      value:
+        path: ./snapshots/content_order_lowest
+    config:
+      contentOrder: lowest-layer-first
+      sectionOrder: alphabetical
+    resolver_inputs:
+      - path: ./inputs/content_order_lowest/template-a
+        origin:
+          template: template-a
+          layer: 0
+      - path: ./inputs/content_order_lowest/template-b
+        origin:
+          template: template-b
+          layer: 1
+
+  - name: content_order_highest_layer_first
+    expected:
+      type: snapshot
+      value:
+        path: ./snapshots/content_order_highest
+    config:
+      contentOrder: highest-layer-first
+      sectionOrder: alphabetical
+    resolver_inputs:
+      - path: ./inputs/content_order_highest/template-a
+        origin:
+          template: template-a
+          layer: 0
+      - path: ./inputs/content_order_highest/template-b
+        origin:
+          template: template-b
+          layer: 1
+
+  # 13b. contentOrder highest-layer-first tie-break (same layer, different template)
+  - name: content_order_highest_same_layer
+    expected:
+      type: snapshot
+      value:
+        path: ./snapshots/content_order_highest_same_layer
+    config:
+      contentOrder: highest-layer-first
+      sectionOrder: alphabetical
+    resolver_inputs:
+      - path: ./inputs/content_order_highest_same_layer/template-b
+        origin:
+          template: template-b
+          layer: 0
+      - path: ./inputs/content_order_highest_same_layer/template-a
+        origin:
+          template: template-a
+          layer: 0
+
+  # 14. All files empty
+  - name: empty_files
+    expected:
+      type: snapshot
+      value:
+        path: ./snapshots/empty_files
+    config: {}
+    resolver_inputs:
+      - path: ./inputs/empty_files/template-a
+        origin:
+          template: template-a
+          layer: 0
+      - path: ./inputs/empty_files/template-b
+        origin:
+          template: template-b
+          layer: 1
+
+  # 14. No H1 at all (entire content is preamble)
+  - name: no_h1
+    expected:
+      type: snapshot
+      value:
+        path: ./snapshots/no_h1
+    config: {}
+    resolver_inputs:
+      - path: ./inputs/no_h1/template-a
+        origin:
+          template: template-a
+          layer: 0
+      - path: ./inputs/no_h1/template-b
+        origin:
+          template: template-b
+          layer: 1
