@@ -176,3 +176,5 @@ dist
 .DS_Store
 
 .kagent/
+.cyan_output/
+.cyan_backup*/
