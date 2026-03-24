@@ -23,7 +23,7 @@ interface Section {
 // --- H1 Section Parsing ---
 
 function parseSections(file: ResolvedFile): Section[] {
-  const content = file.content;
+  const content = file.content.replace(/\r\n?/g, '\n');
   const sections: Section[] = [];
 
   const lines = content.split('\n');
@@ -34,7 +34,7 @@ function parseSections(file: ResolvedFile): Section[] {
   for (const line of lines) {
     if (line.startsWith('# ') && line.length > 2) {
       if (isFirstSection) {
-        const preamble = currentLines.join('\n').trim();
+        const preamble = trimSectionContent(currentLines);
         if (preamble.length > 0) {
           sections.push({ header: '', content: preamble, origin: file.origin });
         }
@@ -52,7 +52,7 @@ function parseSections(file: ResolvedFile): Section[] {
   }
 
   if (isFirstSection) {
-    const text = currentLines.join('\n').trim();
+    const text = trimSectionContent(currentLines);
     if (text.length > 0) {
       sections.push({ header: '', content: text, origin: file.origin });
     }
@@ -100,6 +100,13 @@ function sortContentDesc(a: Section, b: Section): number {
   return b.content.localeCompare(a.content);
 }
 
+const VALID_STRATEGIES: readonly OrderStrategy[] = ['alphabetical', 'reverse-alphabetical', 'lowest-layer-first', 'highest-layer-first'];
+
+function validateStrategy(value: unknown, field: string): OrderStrategy {
+  if (VALID_STRATEGIES.includes(value as OrderStrategy)) return value as OrderStrategy;
+  throw new Error(`Invalid ${field}: "${String(value)}". Must be one of: ${VALID_STRATEGIES.join(', ')}`);
+}
+
 function pickComparator(strategy: OrderStrategy): (a: Section, b: Section) => number {
   switch (strategy) {
     case 'alphabetical':
@@ -133,6 +140,10 @@ function normalizeTrailingWhitespace(content: string): string {
     .join('\n');
 }
 
+function splitParagraphs(content: string): string[] {
+  return content.trim() === '' ? [] : content.split(/\n\s*\n+/);
+}
+
 // --- Core resolver logic (exported for testing) ---
 
 export async function resolveMarkdown(input: ResolverInput): Promise<ResolverOutput> {
@@ -158,8 +169,8 @@ export async function resolveMarkdown(input: ResolverInput): Promise<ResolverOut
     return a.origin.template.localeCompare(b.origin.template);
   });
 
-  const sectionOrder = (config.sectionOrder as OrderStrategy) ?? 'alphabetical';
-  const contentOrder = (config.contentOrder as OrderStrategy) ?? 'lowest-layer-first';
+  const sectionOrder = validateStrategy(config.sectionOrder ?? 'alphabetical', 'sectionOrder');
+  const contentOrder = validateStrategy(config.contentOrder ?? 'lowest-layer-first', 'contentOrder');
 
   // Parse all sections from all files
   const allSections: Section[] = [];
@@ -190,11 +201,13 @@ export async function resolveMarkdown(input: ResolverInput): Promise<ResolverOut
     if (versions.length === 1) {
       resolved.push(versions[0]);
     } else {
-      // Collect all content blocks with their origins, sort by contentOrder, concatenate
-      const tagged = versions.map((v) => ({
-        content: v.content,
-        origin: v.origin,
-      }));
+      // Collect all paragraphs from all versions, sort by contentOrder, concatenate
+      const tagged = versions.flatMap((v) =>
+        splitParagraphs(v.content).map((content) => ({
+          content,
+          origin: v.origin,
+        })),
+      );
       tagged.sort((a, b) => {
         const cmp = contentComparator(
           { header: '', content: a.content, origin: a.origin },
@@ -210,7 +223,12 @@ export async function resolveMarkdown(input: ResolverInput): Promise<ResolverOut
         .filter((t) => t.content.length > 0)
         .map((t) => t.content)
         .join('\n\n');
-      resolved.push({ header: versions[0].header, content: mergedContent, origin: versions[0].origin });
+      // Select origin appropriate for the sectionOrder strategy:
+      // layer-based strategies need the matching extremum origin for correct positioning
+      const mergedOrigin = sectionOrder === 'highest-layer-first'
+        ? versions[versions.length - 1].origin
+        : versions[0].origin;
+      resolved.push({ header: versions[0].header, content: mergedContent, origin: mergedOrigin });
     }
   }
 

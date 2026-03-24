@@ -58,11 +58,15 @@ async function main() {
       const snapshotDir = resolve(BASE, test.expected.value.path);
       const snapshotFile = join(snapshotDir, result.path);
 
-      if (updateSnapshots || !existsSync(snapshotFile)) {
+      if (updateSnapshots) {
         mkdirSync(snapshotDir, { recursive: true });
         writeFileSync(snapshotFile, result.content);
         console.log(`  SNAPSHOT: ${test.name}`);
         passed++;
+      } else if (!existsSync(snapshotFile)) {
+        console.log(`  FAIL: ${test.name} — missing snapshot file: ${snapshotFile}`);
+        failed++;
+        failures.push(test.name);
       } else {
         const expected = readFileSync(snapshotFile, 'utf-8');
         const actual = result.content.replace(/\r\n/g, '\n');
