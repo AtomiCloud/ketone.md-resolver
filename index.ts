@@ -45,7 +45,7 @@ function parseSections(file: ResolvedFile): Section[] {
         sections.push({ header: currentHeader, content: sectionContent, origin: file.origin });
         currentLines = [];
       }
-      currentHeader = line.slice(2);
+      currentHeader = line.slice(2).trimEnd();
     } else {
       currentLines.push(line);
     }
