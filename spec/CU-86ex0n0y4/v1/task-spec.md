@@ -16,7 +16,7 @@ Build a CyanPrint resolver (`atomi/md`) that merges Markdown files when multiple
 - [ ] Each section is a `{header: string, content: string}` pair where header is the H1 text and content is everything after it until the next H1 or end of file
 - [ ] Single input file → passthrough (return as-is)
 - [ ] Multiple inputs with no H1 conflicts → all sections collected, ordered per `sectionOrder` config, output reconstructed with blank lines between sections
-- [ ] Multiple inputs with H1 conflicts → conflict resolved per `contentOrder` config (only one version's content kept per conflicting header)
+- [ ] Multiple inputs with H1 conflicts → all paragraphs from all versions are concatenated, sorted per `contentOrder` config (content is never dropped)
 - [ ] Commutativity: swapping any two input files produces identical output (deterministic sorting based on metadata, not input order)
 - [ ] Associativity: the resolver processes all inputs in a single pass (no pairwise merging)
 - [ ] Resolver works for any Markdown file, not just CLAUDE.md
@@ -35,17 +35,17 @@ Two config knobs, both using the same set of strategies:
 ```yaml
 config:
   sectionOrder: alphabetical       # default: how to order sections in output
-  contentOrder: lowest-layer-first # default: which content wins on header conflict
+  contentOrder: lowest-layer-first # default: how to sort concatenated paragraphs on header conflict
 ```
 
 ### Strategy Options
 
-| Strategy              | `sectionOrder` sorts by   | `contentOrder` picks by       |
-| --------------------- | ------------------------- | ----------------------------- |
-| `alphabetical`        | Header name, A→Z          | Content text, A→Z             |
-| `reverse-alphabetical`| Header name, Z→A          | Content text, Z→A             |
-| `lowest-layer-first`  | Layer ascending (0, 1..)  | File with lowest layer wins   |
-| `highest-layer-first` | Layer descending          | File with highest layer wins  |
+| Strategy              | `sectionOrder` sorts by   | `contentOrder` sorts paragraphs by       |
+| --------------------- | ------------------------- | --------------------------------------- |
+| `alphabetical`        | Header name, A→Z          | Paragraph text, A→Z                    |
+| `reverse-alphabetical`| Header name, Z→A          | Paragraph text, Z→A                    |
+| `lowest-layer-first`  | Layer ascending (0, 1..)  | Origin layer ascending (lowest first)  |
+| `highest-layer-first` | Layer descending          | Origin layer descending (highest first)|
 
 **Defaults:**
 - `sectionOrder`: `alphabetical`
@@ -59,11 +59,13 @@ config:
 - `lowest-layer-first` → sort by the `origin.layer` of the contributing file, ascending
 - `highest-layer-first` → sort by the `origin.layer` of the contributing file, descending
 
-**`contentOrder`** — when the same H1 header appears in multiple inputs, determines which version's content wins:
-- `alphabetical` → pick content whose text sorts first alphabetically (A→Z)
-- `reverse-alphabetical` → pick content whose text sorts last alphabetically (Z→A)
-- `lowest-layer-first` → pick content from the file with the lowest layer number
-- `highest-layer-first` → pick content from the file with the highest layer number
+**`contentOrder`** — when the same H1 header appears in multiple inputs, all paragraphs from all versions are concatenated. `contentOrder` determines the sort order of concatenated paragraphs:
+- `alphabetical` → sort paragraphs by text, A→Z
+- `reverse-alphabetical` → sort paragraphs by text, Z→A
+- `lowest-layer-first` → sort paragraphs by origin layer ascending (paragraphs from lower layers first)
+- `highest-layer-first` → sort paragraphs by origin layer descending (paragraphs from higher layers first)
+
+Content is never dropped — every paragraph from every template is included, just sorted according to `contentOrder`.
 
 For tie-breaking in any strategy, sort by `origin.layer` ascending, then `origin.template` alphabetically ascending.
 

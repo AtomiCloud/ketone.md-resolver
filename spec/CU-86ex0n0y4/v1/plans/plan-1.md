@@ -42,9 +42,9 @@ Use the `writing-resolver-typescript` skill. It covers entry point (`StartResolv
 
 2. **Collect and deduplicate sections** — For each unique header, collect all versions with their `origin` metadata. Non-conflicting headers keep their single version.
 
-3. **Resolve conflicts via `contentOrder`** — When a header has multiple versions, pick the winner based on strategy:
-   - `alphabetical` / `reverse-alphabetical` → sort by content text
-   - `lowest-layer-first` / `highest-layer-first` → sort by `origin.layer`
+3. **Resolve conflicts via `contentOrder`** — When a header has multiple versions, concatenate all paragraphs from all versions and sort them based on strategy. Content is never dropped:
+   - `alphabetical` / `reverse-alphabetical` → sort paragraphs by text
+   - `lowest-layer-first` / `highest-layer-first` → sort paragraphs by `origin.layer`
    - Tie-break: `origin.layer` asc, then `origin.template` asc
 
 4. **Order sections via `sectionOrder`** — Sort all resolved sections:
