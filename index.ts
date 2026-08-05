@@ -1,5 +1,4 @@
-import { StartResolverWithLambda } from '@atomicloud/cyan-sdk';
-import type { ResolverInput, ResolverOutput } from '@atomicloud/cyan-sdk';
+import type { ResolverInput, ResolverOutput } from '@cyanprint/sdk';
 
 export type OrderStrategy = 'alphabetical' | 'reverse-alphabetical' | 'lowest-layer-first' | 'highest-layer-first';
 
@@ -258,4 +257,4 @@ export async function resolveMarkdown(input: ResolverInput): Promise<ResolverOut
 
 // --- Entry Point ---
 
-StartResolverWithLambda(resolveMarkdown);
+export { resolveMarkdown as resolver };

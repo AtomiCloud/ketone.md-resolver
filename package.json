@@ -9,7 +9,5 @@
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
-  "dependencies": {
-    "@atomicloud/cyan-sdk": "^2.1.0"
-  }
+  "dependencies": {}
 }

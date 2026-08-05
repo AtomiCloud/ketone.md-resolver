@@ -1,5 +1,10 @@
 # Task Specification: Markdown File Resolver (CU-86ex0n0y4)
 
+> **Superseded by the CyanPrint v4 conversion (PR #2).** The SDK and entry-point
+> requirements recorded below were true of this task when it was written and are kept verbatim as a
+> historical record. Current shape: `export function resolver(input)` with a type-only
+> `@cyanprint/sdk` import. Do not follow this document as instructions.
+
 ## Source
 
 - Ticket: CU-86ex0n0y4
