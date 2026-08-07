@@ -153,7 +153,7 @@ Reference this resolver in a template's `cyan.yaml`:
 
 ```yaml
 resolvers:
-  - resolver: atomi/md:1
+  - ref: atomi/md@2
     config:
       sectionOrder: alphabetical
       contentOrder: lowest-layer-first
