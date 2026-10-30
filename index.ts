@@ -251,7 +251,9 @@ export async function resolveMarkdown(input: ResolverInput): Promise<ResolverOut
     }
   }
 
-  const content = normalizeTrailingWhitespace(parts.join('\n\n'));
+  // End a non-empty merge with exactly one newline, as prettier and POSIX expect.
+  const body = normalizeTrailingWhitespace(parts.join('\n\n'));
+  const content = body.length > 0 ? `${body}\n` : '';
   return { path, content };
 }
 
